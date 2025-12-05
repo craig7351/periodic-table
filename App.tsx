@@ -14,7 +14,7 @@ import { initializeVisitorCounter, subscribeToVisitorCount } from './services/gu
 export default function App() {
   const [view, setView] = useState<AppView>('table');
   const [selectedElement, setSelectedElement] = useState<PeriodicElement | null>(null);
-  const [speechRate, setSpeechRate] = useState<number>(0.9);
+  const [speechRate, setSpeechRate] = useState<number>(0.7); // Default to Slow
   const [visitorCount, setVisitorCount] = useState<number>(0);
   const [showGuestbook, setShowGuestbook] = useState(false);
   const [showMnemonic, setShowMnemonic] = useState(false);
@@ -43,10 +43,10 @@ export default function App() {
 
   const toggleSpeed = () => {
     playSelectSound();
-    // Cycle: Normal (0.9) -> Fast (1.2) -> Slow (0.7) -> Normal
-    if (speechRate === 0.9) setSpeechRate(1.2);
-    else if (speechRate === 1.2) setSpeechRate(0.7);
-    else setSpeechRate(0.9);
+    // Cycle: Slow (0.7) -> Normal (0.9) -> Fast (1.2) -> Slow
+    if (speechRate === 0.7) setSpeechRate(0.9);
+    else if (speechRate === 0.9) setSpeechRate(1.2);
+    else setSpeechRate(0.7);
   };
 
   const getSpeedLabel = () => {

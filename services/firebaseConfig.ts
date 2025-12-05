@@ -1,5 +1,5 @@
 
-import { initializeApp } from "firebase/app";
+import * as firebase from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
 // TODO: 請將下方的設定替換成您在 Firebase Console 取得的設定
@@ -20,8 +20,15 @@ let app;
 let db;
 
 try {
-    app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
+    // Attempt to get initializeApp from namespace or default export to handle various environment configurations
+    const init = (firebase as any).initializeApp || (firebase as any).default?.initializeApp;
+    
+    if (init) {
+        app = init(firebaseConfig);
+        db = getFirestore(app);
+    } else {
+        console.warn("Could not find initializeApp in firebase/app module");
+    }
 } catch (e: any) {
     // Log only the message to avoid potential circular reference issues with the Error object in some environments
     console.warn("Firebase 初始化失敗。請檢查 services/firebaseConfig.ts 中的設定。錯誤訊息:", e.message);

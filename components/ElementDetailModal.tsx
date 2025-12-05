@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { PeriodicElement } from '../types';
 import { generateVillagerExplanation } from '../services/geminiService';
@@ -12,7 +13,7 @@ interface Props {
   speechRate?: number;
 }
 
-export const ElementDetailModal: React.FC<Props> = ({ element, onClose, speechRate = 0.9 }) => {
+export const ElementDetailModal: React.FC<Props> = ({ element, onClose, speechRate = 0.7 }) => {
   const [explanation, setExplanation] = useState<string>("");
   const [loading, setLoading] = useState(false);
 

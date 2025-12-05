@@ -1,4 +1,5 @@
-export const speak = (text: string, rate: number = 0.9) => {
+
+export const speak = (text: string, rate: number = 0.7) => {
   if (typeof window === 'undefined' || !window.speechSynthesis) return;
 
   // Cancel any ongoing speech to avoid overlapping
