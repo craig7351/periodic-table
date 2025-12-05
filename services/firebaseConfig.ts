@@ -22,8 +22,9 @@ let db;
 try {
     app = initializeApp(firebaseConfig);
     db = getFirestore(app);
-} catch (e) {
-    console.warn("Firebase 初始化失敗。請檢查 services/firebaseConfig.ts 中的設定。", e);
+} catch (e: any) {
+    // Log only the message to avoid potential circular reference issues with the Error object in some environments
+    console.warn("Firebase 初始化失敗。請檢查 services/firebaseConfig.ts 中的設定。錯誤訊息:", e.message);
 }
 
 export { db };

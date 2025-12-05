@@ -4,6 +4,7 @@ import { PeriodicTable } from './components/PeriodicTable';
 import { ElementDetailModal } from './components/ElementDetailModal';
 import { QuizView } from './components/QuizView';
 import { GuestbookModal } from './components/GuestbookModal';
+import { MnemonicModal } from './components/MnemonicModal';
 import { PeriodicElement, AppView } from './types';
 import { BookOpen, Search, Leaf, Gauge, MessageCircle } from 'lucide-react';
 import { speak } from './utils/tts';
@@ -16,6 +17,7 @@ export default function App() {
   const [speechRate, setSpeechRate] = useState<number>(0.9);
   const [visitorCount, setVisitorCount] = useState<number>(0);
   const [showGuestbook, setShowGuestbook] = useState(false);
+  const [showMnemonic, setShowMnemonic] = useState(false);
 
   useEffect(() => {
     // Initialize visitor counter on app load
@@ -133,7 +135,10 @@ export default function App() {
                  點擊元素來了解更多！
                </p>
              </div>
-             <PeriodicTable onElementClick={handleElementClick} />
+             <PeriodicTable 
+               onElementClick={handleElementClick} 
+               onOpenMnemonic={() => setShowMnemonic(true)}
+             />
           </div>
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pt-4">
@@ -172,6 +177,12 @@ export default function App() {
         <GuestbookModal 
           onClose={() => setShowGuestbook(false)} 
           visitorCount={visitorCount} 
+        />
+      )}
+
+      {showMnemonic && (
+        <MnemonicModal 
+          onClose={() => setShowMnemonic(false)}
         />
       )}
 

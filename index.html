@@ -30,7 +30,17 @@
               sans: ['"Zen Maru Gothic"', 'Varela Round', 'ui-rounded', 'SF Pro Rounded', 'system-ui', 'sans-serif'],
             }
           }
-        }
+        },
+        plugins: [
+          function({ addUtilities }) {
+            addUtilities({
+              '.text-stroke-white': {
+                '-webkit-text-stroke': '6px white',
+                'paint-order': 'stroke fill',
+              },
+            })
+          }
+        ]
       }
     </script>
     <!-- Adding Zen Maru Gothic (Rounded) for Chinese/Japanese support and Varela Round -->

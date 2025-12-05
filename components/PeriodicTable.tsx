@@ -1,12 +1,14 @@
+
 import React, { useState } from 'react';
 import { PeriodicElement } from '../types';
 import { ELEMENTS, CATEGORY_COLORS } from '../constants';
 import { ElementCard, getCategoryIcon } from './ElementCard';
-import { Info, Filter, ChevronDown, ArrowLeftRight } from 'lucide-react';
+import { Info, Filter, ChevronDown, ArrowLeftRight, Scroll } from 'lucide-react';
 import { playSelectSound, playClickSound } from '../utils/sound';
 
 interface Props {
   onElementClick: (el: PeriodicElement) => void;
+  onOpenMnemonic: () => void;
 }
 
 const CATEGORY_DESCRIPTIONS: Record<string, string> = {
@@ -22,7 +24,7 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   "錒系元素": "放射性/能量",
 };
 
-export const PeriodicTable: React.FC<Props> = ({ onElementClick }) => {
+export const PeriodicTable: React.FC<Props> = ({ onElementClick, onOpenMnemonic }) => {
   const [showLegend, setShowLegend] = useState(false);
   const [activeCategory, setActiveCategory] = useState("全部");
   const [hoverCategory, setHoverCategory] = useState<string | null>(null);
@@ -36,6 +38,11 @@ export const PeriodicTable: React.FC<Props> = ({ onElementClick }) => {
   const togglePrimaryDisplay = () => {
     playSelectSound();
     setShowNameAsPrimary(!showNameAsPrimary);
+  };
+
+  const handleMnemonicClick = () => {
+    playSelectSound();
+    onOpenMnemonic();
   };
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -80,6 +87,22 @@ export const PeriodicTable: React.FC<Props> = ({ onElementClick }) => {
         </div>
 
         <div className="flex gap-2">
+            {/* Mnemonic Button - Placed left of Language Toggle */}
+            <button 
+              onClick={handleMnemonicClick}
+              className={`
+                flex items-center gap-2 bg-white px-3 py-2 md:px-5 md:py-2 rounded-full 
+                text-nook-text font-bold shadow-sm border-2 border-nook-tan 
+                hover:bg-nook-orange hover:border-white hover:text-white 
+                transition-all transform active:scale-95
+              `}
+              aria-label="背誦口訣"
+              title="查看元素週期表背誦口訣"
+            >
+              <Scroll size={18} />
+              <span className="hidden md:inline">背誦口訣</span>
+            </button>
+
             {/* Toggle Name/Symbol Button */}
             <button 
               onClick={togglePrimaryDisplay}
@@ -209,6 +232,7 @@ export const PeriodicTable: React.FC<Props> = ({ onElementClick }) => {
           </div>
         </div>
       </div>
+
     </div>
   );
 };
