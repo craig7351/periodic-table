@@ -1,16 +1,33 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { PeriodicTable } from './components/PeriodicTable';
 import { ElementDetailModal } from './components/ElementDetailModal';
 import { QuizView } from './components/QuizView';
+import { GuestbookModal } from './components/GuestbookModal';
 import { PeriodicElement, AppView } from './types';
-import { BookOpen, Search, Leaf, Gauge } from 'lucide-react';
+import { BookOpen, Search, Leaf, Gauge, MessageCircle } from 'lucide-react';
 import { speak } from './utils/tts';
 import { playSelectSound } from './utils/sound';
+import { initializeVisitorCounter, subscribeToVisitorCount } from './services/guestbookService';
 
 export default function App() {
   const [view, setView] = useState<AppView>('table');
   const [selectedElement, setSelectedElement] = useState<PeriodicElement | null>(null);
   const [speechRate, setSpeechRate] = useState<number>(0.9);
+  const [visitorCount, setVisitorCount] = useState<number>(0);
+  const [showGuestbook, setShowGuestbook] = useState(false);
+
+  useEffect(() => {
+    // Initialize visitor counter on app load
+    initializeVisitorCounter();
+    
+    // Subscribe to live updates
+    const unsubscribe = subscribeToVisitorCount((count) => {
+      setVisitorCount(count);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleElementClick = (element: PeriodicElement) => {
     speak(element.name, speechRate);
@@ -50,7 +67,7 @@ export default function App() {
             <h1 className="text-2xl font-black tracking-tight hidden sm:block">貍克的元素表</h1>
           </div>
 
-          <nav className="flex gap-2 bg-gray-100/50 p-1 rounded-full">
+          <nav className="flex gap-2 bg-gray-100/50 p-1 rounded-full items-center">
             <button 
               onClick={() => handleViewChange('table')}
               className={`
@@ -71,11 +88,13 @@ export default function App() {
               <BookOpen size={16} />
               <span className="hidden sm:inline">測驗</span>
             </button>
-            <div className="w-px bg-gray-300 mx-1 my-2"></div>
+            <div className="w-px bg-gray-300 mx-1 my-2 h-6"></div>
+            
+            {/* Speed Toggle */}
             <button 
               onClick={toggleSpeed}
               className={`
-                px-4 py-2 rounded-full font-bold text-sm transition-all flex items-center gap-2
+                px-3 py-2 rounded-full font-bold text-sm transition-all flex items-center gap-2
                 text-gray-500 hover:text-nook-text hover:bg-white hover:shadow-sm
               `}
               title="切換語音速度"
@@ -83,6 +102,19 @@ export default function App() {
               <Gauge size={16} />
               <span className="hidden sm:inline">{getSpeedLabel()}</span>
             </button>
+
+             {/* Guestbook Button */}
+             <button 
+              onClick={() => { playSelectSound(); setShowGuestbook(true); }}
+              className={`
+                bg-nook-yellow text-nook-text px-4 py-2 rounded-full font-black text-sm transition-all flex items-center gap-2
+                hover:bg-yellow-300 border-2 border-white shadow-sm ml-2
+              `}
+            >
+              <MessageCircle size={16} />
+              <span>留言板 ({visitorCount})</span>
+            </button>
+
           </nav>
         </div>
       </header>
@@ -122,6 +154,9 @@ export default function App() {
       {/* Footer */}
       <footer className="py-8 text-center text-nook-text/40 text-sm font-bold">
         <p>用 🍃 為了科學製作。</p>
+        <p className="mt-2 text-xs opacity-60">
+          作者: BOOK (<a href="mailto:craig7351@gmail.com" className="hover:text-nook-blue hover:underline">craig7351@gmail.com</a>)
+        </p>
       </footer>
 
       {/* Modals */}
@@ -130,6 +165,13 @@ export default function App() {
           element={selectedElement} 
           onClose={() => setSelectedElement(null)} 
           speechRate={speechRate}
+        />
+      )}
+
+      {showGuestbook && (
+        <GuestbookModal 
+          onClose={() => setShowGuestbook(false)} 
+          visitorCount={visitorCount} 
         />
       )}
 

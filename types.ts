@@ -1,3 +1,4 @@
+
 export interface PeriodicElement {
   number: number;
   symbol: string;
@@ -14,6 +15,23 @@ export interface QuizQuestion {
   options: string[];
   correctAnswerIndex: number;
   explanation: string;
+}
+
+export interface LocalQuizQuestion {
+  題目: string;
+  選項: string[];
+  答案: string; // "A", "B", "C", "D"
+}
+
+export type GuestbookTag = "一般留言" | "問題回報" | "許願功能";
+
+export interface GuestMessage {
+  id?: string;
+  name: string;
+  content: string;
+  tag?: GuestbookTag; // New field
+  timestamp: any; // Firestore timestamp
+  avatar?: string; // Optional villager avatar emoji
 }
 
 export type AppView = 'table' | 'quiz' | 'detail';
