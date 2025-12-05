@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { QuizQuestion, PeriodicElement } from "../types";
-import { VILLAGER_PERSONAS } from "../constants";
+import { VILLAGER_NOTES } from "../villagerNotes";
 
 const getClient = () => {
   const apiKey = process.env.API_KEY;
@@ -11,32 +11,24 @@ const getClient = () => {
 };
 
 export const generateVillagerExplanation = async (element: PeriodicElement): Promise<string> => {
-  try {
-    const ai = getClient();
-    const persona = VILLAGER_PERSONAS[Math.floor(Math.random() * VILLAGER_PERSONAS.length)];
-    
-    const prompt = `
-      Tell me about the chemical element ${element.name} (Symbol: ${element.symbol}, Atomic Number: ${element.number}).
-      Keep it under 60 words.
-      
-      Constraint: ${persona}
-      Language: Traditional Chinese (Taiwan).
-      Use cute emojis. End with a catchphrase typical of Animal Crossing style.
-    `;
-
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
-
-    return response.text || "我想不到要說什麼，抱歉！掰掰！";
-  } catch (error) {
-    console.error("Gemini Error:", error);
-    return "噢！我的腦袋感覺毛毛的。現在記不起來那個元素。啪嗒！";
+  console.log(`[Villager Service] Fetching static note for element: ${element.name} (${element.symbol})`);
+  
+  // Lookup in static database
+  const noteData = VILLAGER_NOTES.find(n => n.element === element.symbol);
+  
+  if (noteData) {
+    // Randomly select one of the 3 notes
+    const options = [noteData.note_1, noteData.note_2, noteData.note_3];
+    const selectedNote = options[Math.floor(Math.random() * options.length)];
+    return selectedNote;
   }
+  
+  // Fallback if not found in static data (should not happen for standard 118 elements)
+  return "噢！我的腦袋感覺毛毛的。現在記不起來那個元素。啪嗒！";
 };
 
 export const generateQuizQuestion = async (topic?: string): Promise<QuizQuestion> => {
+  console.log(`[Gemini Service] Generating quiz question for topic: ${topic || "Random"}`);
   try {
     const ai = getClient();
     
@@ -77,10 +69,11 @@ export const generateQuizQuestion = async (topic?: string): Promise<QuizQuestion
     const text = response.text;
     if (!text) throw new Error("No response from AI");
     
+    console.log(`[Gemini Service] Quiz question generated successfully`);
     return JSON.parse(text) as QuizQuestion;
 
   } catch (error) {
-    console.error("Quiz Gen Error:", error);
+    console.error("[Gemini Service] Quiz Gen Error:", error);
     // Fallback question
     return {
       question: "鑽石的主要成分是哪種元素？",

@@ -115,22 +115,21 @@ export const ElementDetailModal: React.FC<Props> = ({ element, onClose, speechRa
 
           {/* Villager Chat Bubble */}
           <div className="relative">
-            <div className="bg-white border-4 border-nook-tan rounded-3xl p-5 shadow-sm relative z-10">
-              <h3 className="text-nook-green font-black text-lg mb-2 flex items-center gap-2">
-                 島民筆記
-                 {loading && <span className="animate-spin">🍃</span>}
-              </h3>
-              
-              {loading ? (
-                <div className="space-y-2 animate-pulse">
+            <div className="bg-white border-4 border-nook-tan rounded-3xl p-5 shadow-sm relative z-10 min-h-[100px] flex items-center">
+               {loading ? (
+                <div className="space-y-2 animate-pulse w-full">
                   <div className="h-4 bg-nook-bg rounded w-3/4"></div>
                   <div className="h-4 bg-nook-bg rounded w-full"></div>
-                  <div className="h-4 bg-nook-bg rounded w-5/6"></div>
                 </div>
               ) : (
-                <p className="text-nook-text leading-relaxed font-medium">
-                  {explanation}
-                </p>
+                <div className="w-full">
+                  <h3 className="text-nook-green font-black text-lg mb-2 flex items-center gap-2">
+                    島民筆記
+                  </h3>
+                  <p className="text-nook-text leading-relaxed font-medium">
+                    {explanation}
+                  </p>
+                </div>
               )}
             </div>
             {/* Triangle for speech bubble */}
