@@ -1,0 +1,102 @@
+import React, { useState } from 'react';
+import { PeriodicTable } from './components/PeriodicTable';
+import { ElementDetailModal } from './components/ElementDetailModal';
+import { QuizView } from './components/QuizView';
+import { PeriodicElement, AppView } from './types';
+import { Menu, BookOpen, Search, Leaf } from 'lucide-react';
+
+export default function App() {
+  const [view, setView] = useState<AppView>('table');
+  const [selectedElement, setSelectedElement] = useState<PeriodicElement | null>(null);
+
+  const handleElementClick = (element: PeriodicElement) => {
+    setSelectedElement(element);
+  };
+
+  return (
+    <div className="min-h-screen font-sans text-nook-text selection:bg-nook-green selection:text-white flex flex-col">
+      
+      {/* Navbar - Styled like a NookPhone Header or AC Menu */}
+      <header className="fixed top-0 left-0 right-0 z-40 px-4 py-3 bg-white/80 backdrop-blur-md border-b-4 border-nook-green/20">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          
+          <div className="flex items-center gap-2 text-nook-green cursor-pointer" onClick={() => setView('table')}>
+            <div className="bg-nook-green text-white p-2 rounded-full shadow-sm">
+              <Leaf size={24} fill="currentColor" />
+            </div>
+            <h1 className="text-2xl font-black tracking-tight hidden sm:block">貍克的元素表</h1>
+          </div>
+
+          <nav className="flex gap-2 bg-gray-100/50 p-1 rounded-full">
+            <button 
+              onClick={() => setView('table')}
+              className={`
+                px-4 py-2 rounded-full font-bold text-sm transition-all flex items-center gap-2
+                ${view === 'table' ? 'bg-white shadow-sm text-nook-green' : 'text-gray-500 hover:text-nook-text'}
+              `}
+            >
+              <Search size={16} />
+              <span className="hidden sm:inline">探索</span>
+            </button>
+            <button 
+              onClick={() => setView('quiz')}
+              className={`
+                px-4 py-2 rounded-full font-bold text-sm transition-all flex items-center gap-2
+                ${view === 'quiz' ? 'bg-white shadow-sm text-nook-orange' : 'text-gray-500 hover:text-nook-text'}
+              `}
+            >
+              <BookOpen size={16} />
+              <span className="hidden sm:inline">測驗</span>
+            </button>
+          </nav>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="flex-grow pt-24 px-2 sm:px-6 relative">
+        
+        {/* View Switcher */}
+        {view === 'table' ? (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+             <div className="text-center mb-8">
+               <h2 className="text-3xl sm:text-4xl font-black text-nook-text mb-2 drop-shadow-sm text-stroke-white">
+                 無人島化學
+               </h2>
+               <p className="text-nook-text opacity-70 font-medium bg-white/40 inline-block px-4 py-1 rounded-full">
+                 點擊元素來了解更多！
+               </p>
+             </div>
+             <PeriodicTable onElementClick={handleElementClick} />
+          </div>
+        ) : (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pt-4">
+             <div className="text-center mb-8">
+               <h2 className="text-3xl sm:text-4xl font-black text-nook-text mb-2">
+                 每日評估
+               </h2>
+               <p className="text-nook-text opacity-70 font-medium">
+                 向傅達證明你的知識！
+               </p>
+             </div>
+             <QuizView />
+          </div>
+        )}
+
+      </main>
+
+      {/* Footer */}
+      <footer className="py-8 text-center text-nook-text/40 text-sm font-bold">
+        <p>用 🍃 為了科學製作。</p>
+      </footer>
+
+      {/* Modals */}
+      {selectedElement && (
+        <ElementDetailModal 
+          element={selectedElement} 
+          onClose={() => setSelectedElement(null)} 
+        />
+      )}
+
+    </div>
+  );
+}

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>貍克的元素週期表</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              nook: {
+                bg: '#E9F5E1', // Soft grassy green
+                text: '#5B4D3C', // Dark wood brown
+                cream: '#FFFEF2', // Card background
+                green: '#8DD25D', // Leaf green
+                blue: '#4DB5E6', // Sky/Dodo blue
+                yellow: '#F9D859', // Bell yellow
+                orange: '#F49449',
+                tan: '#E6D7B5',
+              }
+            },
+            borderRadius: {
+              '4xl': '2rem',
+              'nook': '2.5rem',
+            },
+            fontFamily: {
+              sans: ['Varela Round', 'ui-rounded', 'SF Pro Rounded', 'system-ui', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+    <!-- Adding a rounded font to match the aesthetic -->
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    <style>
+      body {
+        background-color: #E9F5E1;
+        background-image: radial-gradient(#8DD25D 15%, transparent 16%), radial-gradient(#8DD25D 15%, transparent 16%);
+        background-size: 60px 60px;
+        background-position: 0 0, 30px 30px;
+        background-opacity: 0.1;
+      }
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 12px;
+        height: 12px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #E6D7B5; 
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #8DD25D; 
+        border-radius: 10px;
+        border: 3px solid #E6D7B5;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "react": "https://aistudiocdn.com/react@^19.2.1",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.31.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
