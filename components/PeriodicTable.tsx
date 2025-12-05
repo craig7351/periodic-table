@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { PeriodicElement } from '../types';
 import { ELEMENTS, CATEGORY_COLORS } from '../constants';
 import { ElementCard, getCategoryIcon } from './ElementCard';
-import { Info, Filter, ChevronDown } from 'lucide-react';
+import { Info, Filter, ChevronDown, ArrowLeftRight } from 'lucide-react';
 import { playSelectSound, playClickSound } from '../utils/sound';
 
 interface Props {
@@ -26,10 +26,16 @@ export const PeriodicTable: React.FC<Props> = ({ onElementClick }) => {
   const [showLegend, setShowLegend] = useState(false);
   const [activeCategory, setActiveCategory] = useState("全部");
   const [hoverCategory, setHoverCategory] = useState<string | null>(null);
+  const [showNameAsPrimary, setShowNameAsPrimary] = useState(false);
 
   const toggleLegend = () => {
     playSelectSound();
     setShowLegend(!showLegend);
+  };
+
+  const togglePrimaryDisplay = () => {
+    playSelectSound();
+    setShowNameAsPrimary(!showNameAsPrimary);
   };
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -73,20 +79,38 @@ export const PeriodicTable: React.FC<Props> = ({ onElementClick }) => {
           </div>
         </div>
 
-        <button 
-          onClick={toggleLegend}
-          className={`
-            flex items-center gap-2 bg-white px-3 py-2 md:px-5 md:py-2 rounded-full 
-            text-nook-text font-bold shadow-sm border-2 border-nook-tan 
-            hover:bg-nook-yellow hover:border-white hover:text-white 
-            transition-all transform active:scale-95
-            ${showLegend ? 'bg-nook-yellow border-white text-white ring-2 ring-nook-yellow/50' : ''}
-          `}
-          aria-label="分類說明"
-        >
-          <Info size={18} />
-          <span className="hidden md:inline">分類說明</span>
-        </button>
+        <div className="flex gap-2">
+            {/* Toggle Name/Symbol Button */}
+            <button 
+              onClick={togglePrimaryDisplay}
+              className={`
+                flex items-center gap-2 bg-white px-3 py-2 md:px-5 md:py-2 rounded-full 
+                text-nook-text font-bold shadow-sm border-2 border-nook-tan 
+                hover:bg-nook-blue hover:border-white hover:text-white 
+                transition-all transform active:scale-95
+              `}
+              aria-label="切換顯示"
+              title="切換中文/英文顯示優先級"
+            >
+              <ArrowLeftRight size={18} />
+              <span className="hidden md:inline">{showNameAsPrimary ? "顯示英文" : "顯示中文"}</span>
+            </button>
+
+            <button 
+              onClick={toggleLegend}
+              className={`
+                flex items-center gap-2 bg-white px-3 py-2 md:px-5 md:py-2 rounded-full 
+                text-nook-text font-bold shadow-sm border-2 border-nook-tan 
+                hover:bg-nook-yellow hover:border-white hover:text-white 
+                transition-all transform active:scale-95
+                ${showLegend ? 'bg-nook-yellow border-white text-white ring-2 ring-nook-yellow/50' : ''}
+              `}
+              aria-label="分類說明"
+            >
+              <Info size={18} />
+              <span className="hidden md:inline">分類說明</span>
+            </button>
+        </div>
       </div>
 
       {/* Collapsible Interactive Legend Panel */}
@@ -166,6 +190,7 @@ export const PeriodicTable: React.FC<Props> = ({ onElementClick }) => {
                 element={el} 
                 onClick={onElementClick}
                 isDimmed={isDimmed}
+                showNameAsPrimary={showNameAsPrimary}
               />
             );
           })}

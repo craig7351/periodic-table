@@ -19,6 +19,7 @@ interface Props {
   element: PeriodicElement;
   onClick: (element: PeriodicElement) => void;
   isDimmed?: boolean;
+  showNameAsPrimary?: boolean;
 }
 
 export const getCategoryIcon = (category: string) => {
@@ -37,7 +38,7 @@ export const getCategoryIcon = (category: string) => {
   }
 };
 
-export const ElementCard: React.FC<Props> = ({ element, onClick, isDimmed = false }) => {
+export const ElementCard: React.FC<Props> = ({ element, onClick, isDimmed = false, showNameAsPrimary = false }) => {
   const colorClass = CATEGORY_COLORS[element.category] || "bg-gray-200 border-gray-400 text-gray-800";
   const Icon = getCategoryIcon(element.category);
 
@@ -69,12 +70,15 @@ export const ElementCard: React.FC<Props> = ({ element, onClick, isDimmed = fals
       <span className="text-[10px] sm:text-xs font-bold absolute top-1 left-2 opacity-70 z-10">
         {element.number}
       </span>
+      
+      {/* Primary Display (Large) - Swaps based on showNameAsPrimary */}
       <span className="text-lg sm:text-2xl font-black tracking-tight z-10 relative">
-        {element.symbol}
+        {showNameAsPrimary ? element.name : element.symbol}
       </span>
-      {/* Ensure text is above the icon with z-10 */}
+      
+      {/* Secondary Display (Small) - Swaps based on showNameAsPrimary */}
       <span className="text-[8px] sm:text-[10px] truncate w-full text-center font-medium hidden sm:block z-10 relative">
-        {element.name}
+        {showNameAsPrimary ? element.symbol : element.name}
       </span>
     </button>
   );
