@@ -26,14 +26,17 @@
               'nook': '2.5rem',
             },
             fontFamily: {
-              sans: ['Varela Round', 'ui-rounded', 'SF Pro Rounded', 'system-ui', 'sans-serif'],
+              // Updated to prioritize Zen Maru Gothic for rounded Chinese characters
+              sans: ['"Zen Maru Gothic"', 'Varela Round', 'ui-rounded', 'SF Pro Rounded', 'system-ui', 'sans-serif'],
             }
           }
         }
       }
     </script>
-    <!-- Adding a rounded font to match the aesthetic -->
-    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    <!-- Adding Zen Maru Gothic (Rounded) for Chinese/Japanese support and Varela Round -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
     <style>
       body {
         background-color: #E9F5E1;

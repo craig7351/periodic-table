@@ -1,7 +1,18 @@
 import React, { useState } from 'react';
 import { QuizQuestion } from '../types';
 import { generateQuizQuestion } from '../services/geminiService';
-import { HelpCircle, CheckCircle, XCircle, Trophy, RefreshCw } from 'lucide-react';
+import { CheckCircle, XCircle, Trophy, RefreshCw, Settings2 } from 'lucide-react';
+import { playCorrectSound, playIncorrectSound, playClickSound, playSelectSound } from '../utils/sound';
+
+const QUIZ_TOPICS = [
+  "隨機",
+  "鹼金屬",
+  "鹼土金屬",
+  "過渡金屬",
+  "稀有氣體",
+  "非金屬",
+  "原子序與符號"
+];
 
 export const QuizView: React.FC = () => {
   const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion | null>(null);
@@ -9,27 +20,45 @@ export const QuizView: React.FC = () => {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [score, setScore] = useState(0);
+  const [topic, setTopic] = useState<string>("隨機");
 
   const fetchQuestion = async () => {
+    playSelectSound();
     setLoading(true);
     setSelectedAnswer(null);
     setIsCorrect(null);
     setCurrentQuestion(null);
     
-    const q = await generateQuizQuestion();
+    // Pass topic if not random
+    const searchTopic = topic === "隨機" ? undefined : topic;
+    const q = await generateQuizQuestion(searchTopic);
     setCurrentQuestion(q);
     setLoading(false);
+  };
+
+  const handleTopicSelect = (t: string) => {
+    playClickSound();
+    setTopic(t);
   };
 
   const handleAnswer = (index: number) => {
     if (selectedAnswer !== null) return; // Prevent changing answer
     setSelectedAnswer(index);
     if (currentQuestion && index === currentQuestion.correctAnswerIndex) {
+      playCorrectSound();
       setIsCorrect(true);
       setScore(s => s + 100);
     } else {
+      playIncorrectSound();
       setIsCorrect(false);
     }
+  };
+
+  const resetToMenu = () => {
+    playSelectSound();
+    setCurrentQuestion(null);
+    setSelectedAnswer(null);
+    setIsCorrect(null);
   };
 
   return (
@@ -52,8 +81,33 @@ export const QuizView: React.FC = () => {
             📝
           </div>
           <h2 className="text-3xl font-black text-nook-text mb-4">突擊測驗！</h2>
-          <p className="text-nook-text mb-8 opacity-80">
-            準備好測試你的元素知識了嗎，嗯？<br/>
+          
+          {/* Topic Selection */}
+          <div className="mb-6 bg-white/50 p-4 rounded-3xl">
+            <p className="text-nook-text font-bold mb-3 text-sm opacity-60 uppercase tracking-widest flex items-center justify-center gap-2">
+                <Settings2 size={16} /> 選擇測驗主題
+            </p>
+            <div className="flex flex-wrap gap-2 justify-center">
+              {QUIZ_TOPICS.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => handleTopicSelect(t)}
+                  className={`
+                    px-4 py-2 rounded-full font-bold text-sm transition-all border-2
+                    ${topic === t 
+                      ? 'bg-nook-orange text-white border-nook-orange shadow-md transform scale-105' 
+                      : 'bg-white text-nook-text border-nook-tan hover:bg-nook-bg hover:border-nook-orange/50'}
+                  `}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <p className="text-nook-text mb-8 opacity-80 font-medium">
+            {topic === "隨機" ? "隨機挑戰你的元素知識！" : `專注於 ${topic} 的測驗！`}
+            <br/>
             答對的話貍克會給你獎勵喔！
           </p>
           <button 
@@ -68,14 +122,21 @@ export const QuizView: React.FC = () => {
       {loading && (
         <div className="flex flex-col items-center justify-center h-64">
            <div className="animate-spin text-4xl mb-4">🍃</div>
-           <p className="text-nook-text font-bold text-lg animate-pulse">思考中...</p>
+           <p className="text-nook-text font-bold text-lg animate-pulse">
+             {topic === "隨機" ? "思考中..." : `正在尋找關於 ${topic} 的問題...`}
+           </p>
         </div>
       )}
 
       {currentQuestion && (
         <div className="bg-nook-cream p-6 sm:p-8 rounded-nook border-4 border-white shadow-xl relative animate-in zoom-in-95 duration-300">
+           {/* Display current topic badge */}
+           <div className="absolute top-4 right-6 bg-nook-tan/50 px-3 py-1 rounded-full text-xs font-bold text-nook-text opacity-60">
+             {topic}
+           </div>
+
            {/* Question Bubble */}
-           <div className="mb-8">
+           <div className="mb-8 mt-2">
              <h3 className="text-xl sm:text-2xl font-black text-nook-text leading-tight">
                {currentQuestion.question}
              </h3>
@@ -130,12 +191,21 @@ export const QuizView: React.FC = () => {
                    </p>
                  </div>
                </div>
-               <button 
-                 onClick={fetchQuestion}
-                 className="mt-4 w-full bg-nook-orange text-white font-bold py-3 rounded-xl hover:bg-orange-400 transition-colors flex items-center justify-center gap-2"
-               >
-                 <RefreshCw size={18} /> 下一題
-               </button>
+               
+               <div className="flex gap-3 mt-6">
+                 <button 
+                    onClick={resetToMenu}
+                    className="flex-1 bg-white border-2 border-nook-tan text-nook-text font-bold py-3 rounded-xl hover:bg-red-50 hover:border-red-200 hover:text-red-800 transition-colors"
+                 >
+                   更換主題
+                 </button>
+                 <button 
+                   onClick={fetchQuestion}
+                   className="flex-[2] bg-nook-orange text-white font-bold py-3 rounded-xl hover:bg-orange-400 transition-colors flex items-center justify-center gap-2 border-b-4 border-orange-600 active:border-b-0 active:translate-y-1"
+                 >
+                   <RefreshCw size={18} /> 下一題
+                 </button>
+               </div>
              </div>
            )}
         </div>

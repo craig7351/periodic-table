@@ -5,6 +5,7 @@ import { QuizView } from './components/QuizView';
 import { PeriodicElement, AppView } from './types';
 import { BookOpen, Search, Leaf } from 'lucide-react';
 import { speak } from './utils/tts';
+import { playSelectSound } from './utils/sound';
 
 export default function App() {
   const [view, setView] = useState<AppView>('table');
@@ -15,6 +16,11 @@ export default function App() {
     setSelectedElement(element);
   };
 
+  const handleViewChange = (newView: AppView) => {
+    playSelectSound();
+    setView(newView);
+  };
+
   return (
     <div className="min-h-screen font-sans text-nook-text selection:bg-nook-green selection:text-white flex flex-col">
       
@@ -22,7 +28,7 @@ export default function App() {
       <header className="fixed top-0 left-0 right-0 z-40 px-4 py-3 bg-white/80 backdrop-blur-md border-b-4 border-nook-green/20">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           
-          <div className="flex items-center gap-2 text-nook-green cursor-pointer" onClick={() => setView('table')}>
+          <div className="flex items-center gap-2 text-nook-green cursor-pointer" onClick={() => handleViewChange('table')}>
             <div className="bg-nook-green text-white p-2 rounded-full shadow-sm">
               <Leaf size={24} fill="currentColor" />
             </div>
@@ -31,7 +37,7 @@ export default function App() {
 
           <nav className="flex gap-2 bg-gray-100/50 p-1 rounded-full">
             <button 
-              onClick={() => setView('table')}
+              onClick={() => handleViewChange('table')}
               className={`
                 px-4 py-2 rounded-full font-bold text-sm transition-all flex items-center gap-2
                 ${view === 'table' ? 'bg-white shadow-sm text-nook-green' : 'text-gray-500 hover:text-nook-text'}
@@ -41,7 +47,7 @@ export default function App() {
               <span className="hidden sm:inline">探索</span>
             </button>
             <button 
-              onClick={() => setView('quiz')}
+              onClick={() => handleViewChange('quiz')}
               className={`
                 px-4 py-2 rounded-full font-bold text-sm transition-all flex items-center gap-2
                 ${view === 'quiz' ? 'bg-white shadow-sm text-nook-orange' : 'text-gray-500 hover:text-nook-text'}
