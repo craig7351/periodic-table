@@ -8,9 +8,10 @@ import { speak } from '../utils/tts';
 interface Props {
   element: PeriodicElement | null;
   onClose: () => void;
+  speechRate?: number;
 }
 
-export const ElementDetailModal: React.FC<Props> = ({ element, onClose }) => {
+export const ElementDetailModal: React.FC<Props> = ({ element, onClose, speechRate = 0.9 }) => {
   const [explanation, setExplanation] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
@@ -50,7 +51,7 @@ export const ElementDetailModal: React.FC<Props> = ({ element, onClose }) => {
                  <button 
                    onClick={(e) => {
                      e.stopPropagation();
-                     speak(element.name);
+                     speak(element.name, speechRate);
                    }}
                    className="p-2 bg-white/30 hover:bg-white/60 rounded-full text-nook-text transition-colors"
                    aria-label="發音"

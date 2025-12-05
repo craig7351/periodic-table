@@ -3,22 +3,37 @@ import { PeriodicTable } from './components/PeriodicTable';
 import { ElementDetailModal } from './components/ElementDetailModal';
 import { QuizView } from './components/QuizView';
 import { PeriodicElement, AppView } from './types';
-import { BookOpen, Search, Leaf } from 'lucide-react';
+import { BookOpen, Search, Leaf, Gauge } from 'lucide-react';
 import { speak } from './utils/tts';
 import { playSelectSound } from './utils/sound';
 
 export default function App() {
   const [view, setView] = useState<AppView>('table');
   const [selectedElement, setSelectedElement] = useState<PeriodicElement | null>(null);
+  const [speechRate, setSpeechRate] = useState<number>(0.9);
 
   const handleElementClick = (element: PeriodicElement) => {
-    speak(element.name);
+    speak(element.name, speechRate);
     setSelectedElement(element);
   };
 
   const handleViewChange = (newView: AppView) => {
     playSelectSound();
     setView(newView);
+  };
+
+  const toggleSpeed = () => {
+    playSelectSound();
+    // Cycle: Normal (0.9) -> Fast (1.2) -> Slow (0.7) -> Normal
+    if (speechRate === 0.9) setSpeechRate(1.2);
+    else if (speechRate === 1.2) setSpeechRate(0.7);
+    else setSpeechRate(0.9);
+  };
+
+  const getSpeedLabel = () => {
+    if (speechRate === 0.9) return "語速: 正常";
+    if (speechRate > 1.0) return "語速: 快";
+    return "語速: 慢";
   };
 
   return (
@@ -55,6 +70,18 @@ export default function App() {
             >
               <BookOpen size={16} />
               <span className="hidden sm:inline">測驗</span>
+            </button>
+            <div className="w-px bg-gray-300 mx-1 my-2"></div>
+            <button 
+              onClick={toggleSpeed}
+              className={`
+                px-4 py-2 rounded-full font-bold text-sm transition-all flex items-center gap-2
+                text-gray-500 hover:text-nook-text hover:bg-white hover:shadow-sm
+              `}
+              title="切換語音速度"
+            >
+              <Gauge size={16} />
+              <span className="hidden sm:inline">{getSpeedLabel()}</span>
             </button>
           </nav>
         </div>
@@ -102,6 +129,7 @@ export default function App() {
         <ElementDetailModal 
           element={selectedElement} 
           onClose={() => setSelectedElement(null)} 
+          speechRate={speechRate}
         />
       )}
 

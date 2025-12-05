@@ -9,6 +9,19 @@ interface Props {
   onElementClick: (el: PeriodicElement) => void;
 }
 
+const CATEGORY_DESCRIPTIONS: Record<string, string> = {
+  "鹼金屬": "活性強，易燃",
+  "鹼土金屬": "存在於地殼岩石中",
+  "過渡金屬": "堅固、金屬特性強",
+  "稀有氣體": "發光、高貴",
+  "雙原子非金屬": "氣體",
+  "多原子非金屬": "結構、碳化學",
+  "類金屬": "半導體原料",
+  "後過渡金屬": "金屬加工",
+  "鑭系元素": "稀土礦物",
+  "錒系元素": "放射性/能量",
+};
+
 export const PeriodicTable: React.FC<Props> = ({ onElementClick }) => {
   const [showLegend, setShowLegend] = useState(false);
   const [activeCategory, setActiveCategory] = useState("全部");
@@ -80,7 +93,7 @@ export const PeriodicTable: React.FC<Props> = ({ onElementClick }) => {
       <div 
         className={`
           w-full max-w-[1000px] mx-auto px-4 transition-all duration-300 ease-in-out overflow-hidden
-          ${showLegend ? 'max-h-[600px] opacity-100 mb-6' : 'max-h-0 opacity-0 mb-0'}
+          ${showLegend ? 'max-h-[800px] opacity-100 mb-6' : 'max-h-0 opacity-0 mb-0'}
         `}
       >
         <div className="bg-nook-cream border-4 border-white rounded-nook p-6 shadow-inner relative">
@@ -99,6 +112,8 @@ export const PeriodicTable: React.FC<Props> = ({ onElementClick }) => {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
               {Object.entries(CATEGORY_COLORS).map(([category, classes]) => {
                   const Icon = getCategoryIcon(category);
+                  const description = CATEGORY_DESCRIPTIONS[category] || "";
+
                   return (
                     <button 
                         key={category}
@@ -106,7 +121,7 @@ export const PeriodicTable: React.FC<Props> = ({ onElementClick }) => {
                         onMouseEnter={() => setHoverCategory(category)}
                         onMouseLeave={() => setHoverCategory(null)}
                         className={`
-                            flex items-center gap-2 p-2 rounded-xl border-2 transition-all text-left text-xs sm:text-sm font-bold
+                            flex items-center gap-3 p-2 rounded-xl border-2 transition-all text-left
                             ${activeCategory === category 
                                 ? 'bg-white border-nook-green shadow-md scale-105 ring-2 ring-nook-green/20' 
                                 : 'bg-white/50 border-transparent hover:bg-white hover:border-nook-tan hover:shadow-sm'
@@ -114,10 +129,13 @@ export const PeriodicTable: React.FC<Props> = ({ onElementClick }) => {
                         `}
                     >
                         {/* Visual color dot with Icon inside */}
-                        <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border shadow-sm shrink-0 flex items-center justify-center ${classes.split(' ')[0]}`}>
-                            <Icon size={14} className="text-current opacity-70" />
+                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border shadow-sm shrink-0 flex items-center justify-center ${classes.split(' ')[0]}`}>
+                            <Icon size={16} className="text-current opacity-70" />
                         </div>
-                        <span className="text-nook-text truncate leading-tight">{category}</span>
+                        <div className="flex flex-col min-w-0">
+                           <span className="text-xs sm:text-sm font-bold text-nook-text truncate leading-tight">{category}</span>
+                           <span className="text-[10px] text-nook-text/60 font-bold truncate">{description}</span>
+                        </div>
                     </button>
                   );
               })}
