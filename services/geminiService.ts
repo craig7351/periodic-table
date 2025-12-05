@@ -2,17 +2,17 @@
 import { PeriodicElement } from "../types";
 import { VILLAGER_NOTES } from "../villagerNotes";
 
-// Gemini API logic removed for quiz as requested.
-// Only keeping the static villager note logic here (which technically doesn't need Gemini anymore).
+// This service now fetches pre-written villager notes instead of using AI generation.
+// This ensures fast response times and consistent character personality.
 
 export const generateVillagerExplanation = async (element: PeriodicElement): Promise<string> => {
-  console.log(`[Villager Service] Fetching static note for element: ${element.name} (${element.symbol})`);
+  // console.log(`[Villager Service] Fetching static note for element: ${element.name} (${element.symbol})`);
   
   // Lookup in static database
   const noteData = VILLAGER_NOTES.find(n => n.element === element.symbol);
   
   if (noteData) {
-    // Randomly select one of the 3 notes
+    // Randomly select one of the 3 notes to add variety
     const options = [noteData.note_1, noteData.note_2, noteData.note_3];
     const selectedNote = options[Math.floor(Math.random() * options.length)];
     return selectedNote;
