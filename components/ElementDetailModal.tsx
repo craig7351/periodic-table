@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { PeriodicElement } from '../types';
 import { generateVillagerExplanation } from '../services/geminiService';
-import { X, Sparkles, Beaker, Volume2 } from 'lucide-react';
+import { X, Sparkles, Beaker, Volume2, Youtube } from 'lucide-react';
 import { CATEGORY_COLORS } from '../constants';
 import { speak } from '../utils/tts';
+import { ELEMENT_VIDEOS } from '../elementVideos';
 
 interface Props {
   element: PeriodicElement | null;
@@ -31,6 +32,7 @@ export const ElementDetailModal: React.FC<Props> = ({ element, onClose, speechRa
   const colorClass = CATEGORY_COLORS[element.category] || "bg-gray-100";
   // Extract just the background color for the header
   const headerColor = colorClass.split(' ')[0];
+  const videoUrl = ELEMENT_VIDEOS[element.number];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
@@ -42,22 +44,39 @@ export const ElementDetailModal: React.FC<Props> = ({ element, onClose, speechRa
            <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
            
            <div className="relative z-10 flex gap-4 items-center">
-             <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center border-4 border-white shadow-md text-3xl font-black text-nook-text">
+             <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center border-4 border-white shadow-md text-3xl font-black text-nook-text shrink-0">
                {element.symbol}
              </div>
-             <div className="flex flex-col items-start">
-               <div className="flex items-center gap-2">
+             <div className="flex flex-col items-start min-w-0">
+               <div className="flex items-center gap-2 flex-wrap">
                  <h2 className="text-3xl font-black text-nook-text">{element.name}</h2>
-                 <button 
-                   onClick={(e) => {
-                     e.stopPropagation();
-                     speak(element.name, speechRate);
-                   }}
-                   className="p-2 bg-white/30 hover:bg-white/60 rounded-full text-nook-text transition-colors"
-                   aria-label="發音"
-                 >
-                   <Volume2 size={20} />
-                 </button>
+                 
+                 <div className="flex gap-1">
+                   <button 
+                     onClick={(e) => {
+                       e.stopPropagation();
+                       speak(element.name, speechRate);
+                     }}
+                     className="p-2 bg-white/30 hover:bg-white/60 rounded-full text-nook-text transition-colors"
+                     aria-label="發音"
+                   >
+                     <Volume2 size={20} />
+                   </button>
+                   
+                   {videoUrl && videoUrl !== "Not Found" && (
+                     <a 
+                        href={videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-2 bg-white/30 hover:bg-[#FF0000] hover:text-white rounded-full text-[#FF0000] transition-colors"
+                        aria-label="觀看影片"
+                        title="觀看 YouTube 介紹"
+                     >
+                       <Youtube size={20} />
+                     </a>
+                   )}
+                 </div>
                </div>
                <span className="inline-block px-3 py-1 bg-white/50 rounded-full text-sm font-bold text-nook-text mt-1">
                  編號 {element.number}
@@ -67,7 +86,7 @@ export const ElementDetailModal: React.FC<Props> = ({ element, onClose, speechRa
            
            <button 
              onClick={onClose}
-             className="relative z-10 p-2 bg-white rounded-full hover:bg-red-100 text-nook-text transition-colors shadow-sm"
+             className="relative z-10 p-2 bg-white rounded-full hover:bg-red-100 text-nook-text transition-colors shadow-sm shrink-0"
            >
              <X size={24} />
            </button>
