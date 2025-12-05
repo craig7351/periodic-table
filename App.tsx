@@ -3,13 +3,15 @@ import { PeriodicTable } from './components/PeriodicTable';
 import { ElementDetailModal } from './components/ElementDetailModal';
 import { QuizView } from './components/QuizView';
 import { PeriodicElement, AppView } from './types';
-import { Menu, BookOpen, Search, Leaf } from 'lucide-react';
+import { BookOpen, Search, Leaf } from 'lucide-react';
+import { speak } from './utils/tts';
 
 export default function App() {
   const [view, setView] = useState<AppView>('table');
   const [selectedElement, setSelectedElement] = useState<PeriodicElement | null>(null);
 
   const handleElementClick = (element: PeriodicElement) => {
+    speak(element.name);
     setSelectedElement(element);
   };
 

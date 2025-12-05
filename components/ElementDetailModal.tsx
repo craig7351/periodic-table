@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { PeriodicElement } from '../types';
 import { generateVillagerExplanation } from '../services/geminiService';
-import { X, Sparkles, Beaker, MapPin } from 'lucide-react';
+import { X, Sparkles, Beaker, Volume2 } from 'lucide-react';
 import { CATEGORY_COLORS } from '../constants';
+import { speak } from '../utils/tts';
 
 interface Props {
   element: PeriodicElement | null;
@@ -43,8 +44,20 @@ export const ElementDetailModal: React.FC<Props> = ({ element, onClose }) => {
              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center border-4 border-white shadow-md text-3xl font-black text-nook-text">
                {element.symbol}
              </div>
-             <div>
-               <h2 className="text-3xl font-black text-nook-text">{element.name}</h2>
+             <div className="flex flex-col items-start">
+               <div className="flex items-center gap-2">
+                 <h2 className="text-3xl font-black text-nook-text">{element.name}</h2>
+                 <button 
+                   onClick={(e) => {
+                     e.stopPropagation();
+                     speak(element.name);
+                   }}
+                   className="p-2 bg-white/30 hover:bg-white/60 rounded-full text-nook-text transition-colors"
+                   aria-label="發音"
+                 >
+                   <Volume2 size={20} />
+                 </button>
+               </div>
                <span className="inline-block px-3 py-1 bg-white/50 rounded-full text-sm font-bold text-nook-text mt-1">
                  編號 {element.number}
                </span>
