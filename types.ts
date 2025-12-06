@@ -3,6 +3,7 @@ export interface PeriodicElement {
   number: number;
   symbol: string;
   name: string;
+  englishName: string; // Added for English quiz
   atomic_mass: number;
   category: string;
   xpos: number;
