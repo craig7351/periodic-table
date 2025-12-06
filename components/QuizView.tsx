@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { LocalQuizQuestion, PeriodicElement } from '../types';
 import { ELEMENTS } from '../constants';
-import { CheckCircle, XCircle, Trophy, RefreshCw, Settings2, Play, ArrowRight, Home, LayoutGrid, CheckSquare, Languages } from 'lucide-react';
+import { CheckCircle, XCircle, Trophy, RefreshCw, Settings2, Play, ArrowRight, Home, LayoutGrid, CheckSquare, Languages, Globe } from 'lucide-react';
 import { playCorrectSound, playIncorrectSound, playClickSound, playSelectSound } from '../utils/sound';
 import { QUIZ_RANDOM } from '../data/quiz_random';
 import { QUIZ_SYMBOLS } from '../data/quiz_symbols';
@@ -11,11 +11,12 @@ const QUIZ_TOPICS = ["隨機", "原子序與符號"];
 const QUIZ_LENGTHS = [10, 30, 100];
 
 type QuizState = 'menu' | 'selector' | 'playing' | 'finished';
+type QuizMode = 'standard' | 'english-chinese' | 'chinese-english';
 
 export const QuizView: React.FC = () => {
   const [quizState, setQuizState] = useState<QuizState>('menu');
   const [topic, setTopic] = useState<string>("隨機");
-  const [quizMode, setQuizMode] = useState<"standard" | "english-chinese">("standard");
+  const [quizMode, setQuizMode] = useState<QuizMode>("standard");
   const [targetLength, setTargetLength] = useState<number>(10);
   
   const [questions, setQuestions] = useState<LocalQuizQuestion[]>([]);
@@ -58,9 +59,9 @@ export const QuizView: React.FC = () => {
     setQuizState('playing');
   };
 
-  const openSelector = () => {
+  const openSelector = (mode: QuizMode) => {
     playSelectSound();
-    setQuizMode("english-chinese");
+    setQuizMode(mode);
     // Reset selection
     setSelectedGroups([]);
     setSelectedTransitionRows([]);
@@ -89,7 +90,7 @@ export const QuizView: React.FC = () => {
     );
   };
 
-  const startEnglishQuiz = () => {
+  const startCustomQuiz = () => {
     playSelectSound();
     
     // Filter Elements based on selection
@@ -113,20 +114,34 @@ export const QuizView: React.FC = () => {
       return;
     }
 
-    // Generate Questions
+    // Generate Questions based on mode
     const generatedQuestions: LocalQuizQuestion[] = pool.map(el => {
       // Create distractors
       const otherElements = ELEMENTS.filter(e => e.number !== el.number);
       const shuffledOthers = otherElements.sort(() => 0.5 - Math.random()).slice(0, 3);
       
       const optionsObjects = [el, ...shuffledOthers].sort(() => 0.5 - Math.random());
-      const options = optionsObjects.map(e => e.name);
       
-      const correctIndex = options.indexOf(el.name);
+      let questionText = "";
+      let options: string[] = [];
+      let correctAnswerText = "";
+
+      if (quizMode === 'english-chinese') {
+        questionText = `${el.englishName} (${el.symbol})`;
+        options = optionsObjects.map(e => e.name); // Chinese options
+        correctAnswerText = el.name;
+      } else if (quizMode === 'chinese-english') {
+        // Chinese Name -> Symbol (Abbreviation)
+        questionText = `${el.name}`;
+        options = optionsObjects.map(e => e.symbol); // Symbol options
+        correctAnswerText = el.symbol;
+      }
+      
+      const correctIndex = options.indexOf(correctAnswerText);
       const answerChar = ["A", "B", "C", "D"][correctIndex];
 
       return {
-        題目: `${el.englishName} (${el.symbol})`,
+        題目: questionText,
         選項: options,
         答案: answerChar
       };
@@ -186,22 +201,22 @@ export const QuizView: React.FC = () => {
   // --- Render: Menu ---
   if (quizState === 'menu') {
     return (
-      <div className="max-w-4xl mx-auto w-full px-4 pb-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="max-w-6xl mx-auto w-full px-4 pb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
            
-           {/* Left: Standard Quiz */}
-           <div className="bg-nook-cream p-8 rounded-nook border-4 border-white shadow-xl flex flex-col items-center text-center">
-              <div className="w-20 h-20 bg-nook-green rounded-full flex items-center justify-center mb-4 text-white text-3xl shadow-md transform -rotate-3">
+           {/* 1. Standard Quiz */}
+           <div className="bg-nook-cream p-6 rounded-nook border-4 border-white shadow-xl flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-nook-green rounded-full flex items-center justify-center mb-4 text-white text-2xl shadow-md transform -rotate-3">
                 📝
               </div>
-              <h2 className="text-2xl font-black text-nook-text mb-2">標準測驗</h2>
-              <p className="text-nook-text opacity-70 mb-6 font-medium text-sm">
+              <h2 className="text-xl font-black text-nook-text mb-2">標準測驗</h2>
+              <p className="text-nook-text opacity-70 mb-4 font-medium text-sm flex-grow">
                 包含原子序、符號、分類的綜合測驗。
               </p>
               
-              <div className="w-full bg-white/50 p-4 rounded-3xl mb-6">
+              <div className="w-full bg-white/50 p-4 rounded-3xl mb-4">
                 <p className="text-nook-text font-bold mb-2 text-xs opacity-60 uppercase tracking-widest flex items-center justify-center gap-2">
-                    <Settings2 size={14} /> 主題
+                    <Settings2 size={12} /> 主題
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center mb-4">
                   {QUIZ_TOPICS.map((t) => (
@@ -209,7 +224,7 @@ export const QuizView: React.FC = () => {
                       key={t}
                       onClick={() => handleTopicSelect(t)}
                       className={`
-                        px-4 py-2 rounded-full font-bold text-xs transition-all border-2
+                        px-3 py-1 rounded-full font-bold text-[10px] transition-all border-2
                         ${topic === t 
                           ? 'bg-nook-orange text-white border-nook-orange shadow-md' 
                           : 'bg-white text-nook-text border-nook-tan hover:bg-nook-bg'}
@@ -221,7 +236,7 @@ export const QuizView: React.FC = () => {
                 </div>
 
                 <p className="text-nook-text font-bold mb-2 text-xs opacity-60 uppercase tracking-widest flex items-center justify-center gap-2">
-                    <RefreshCw size={14} /> 題數
+                    <RefreshCw size={12} /> 題數
                 </p>
                 <div className="flex justify-center gap-2">
                   {QUIZ_LENGTHS.map((len) => (
@@ -229,7 +244,7 @@ export const QuizView: React.FC = () => {
                       key={len} 
                       onClick={() => handleLengthSelect(len)}
                       className={`
-                        w-10 h-10 rounded-full font-bold text-xs flex items-center justify-center border-2 transition-all
+                        w-8 h-8 rounded-full font-bold text-xs flex items-center justify-center border-2 transition-all
                         ${targetLength === len 
                           ? 'bg-nook-blue text-white border-nook-blue shadow-md' 
                           : 'bg-white text-nook-text border-nook-tan hover:border-nook-blue/50'}
@@ -243,39 +258,40 @@ export const QuizView: React.FC = () => {
 
               <button 
                 onClick={startStandardQuiz}
-                className="w-full bg-nook-blue text-white font-bold text-lg py-3 rounded-full border-b-4 border-blue-600 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center gap-2 mt-auto"
+                className="w-full bg-nook-blue text-white font-bold text-lg py-3 rounded-full border-b-4 border-blue-600 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center gap-2"
               >
-                <Play fill="currentColor" size={18} /> 開始測驗
+                <Play fill="currentColor" size={18} /> 開始
               </button>
            </div>
 
-           {/* Right: English-Chinese Quiz */}
-           <div className="bg-[#FFFDF0] p-8 rounded-nook border-4 border-nook-tan shadow-xl flex flex-col items-center text-center relative overflow-hidden">
+           {/* 2. English -> Chinese */}
+           <div className="bg-[#FFFDF0] p-6 rounded-nook border-4 border-nook-tan shadow-xl flex flex-col items-center text-center relative overflow-hidden">
                <div className="absolute top-0 left-0 w-full h-2 bg-nook-orange/30"></div>
-               <div className="w-20 h-20 bg-nook-orange rounded-full flex items-center justify-center mb-4 text-white text-3xl shadow-md transform rotate-3">
-                 <Languages size={32} />
+               <div className="w-16 h-16 bg-nook-orange rounded-full flex items-center justify-center mb-4 text-white text-2xl shadow-md transform rotate-3">
+                 <Languages size={28} />
                </div>
-               <h2 className="text-2xl font-black text-nook-text mb-2">英翻中挑戰</h2>
-               <p className="text-nook-text opacity-70 mb-6 font-medium text-sm">
-                 選擇你想練習的元素範圍，挑戰你的英文記憶力！
+               <h2 className="text-xl font-black text-nook-text mb-2">英翻中挑戰</h2>
+               <p className="text-nook-text opacity-70 mb-4 font-medium text-sm flex-grow">
+                 看到英文單字，能不能馬上反應出中文元素名呢？
                </p>
 
-               <div className="w-full bg-nook-tan/20 p-4 rounded-3xl mb-6 flex-1 flex flex-col justify-center items-center border-2 border-dashed border-nook-tan">
-                  <LayoutGrid className="text-nook-text opacity-30 mb-2" size={48} />
-                  <p className="text-xs text-nook-text font-bold">自訂範圍：主族、過渡元素、內過渡元素</p>
+               <div className="w-full bg-nook-tan/20 p-4 rounded-3xl mb-4 flex-col justify-center items-center border-2 border-dashed border-nook-tan">
+                  <div className="flex justify-center gap-2 mb-2">
+                      <span className="bg-white px-2 py-1 rounded text-xs font-bold shadow-sm">Hydrogen</span>
+                      <ArrowRight size={16} className="text-nook-text/50"/>
+                      <span className="bg-nook-orange text-white px-2 py-1 rounded text-xs font-bold shadow-sm">氫</span>
+                  </div>
+                  <p className="text-[10px] text-nook-text opacity-50 font-bold mt-2">可自訂範圍</p>
                </div>
 
-               <div className="w-full mb-6">
-                  <p className="text-nook-text font-bold mb-2 text-xs opacity-60 uppercase tracking-widest flex items-center justify-center gap-2">
-                      <RefreshCw size={14} /> 題數
-                  </p>
+               <div className="w-full mb-4">
                   <div className="flex justify-center gap-2">
                     {QUIZ_LENGTHS.map((len) => (
                       <button 
                         key={len} 
                         onClick={() => handleLengthSelect(len)}
                         className={`
-                          w-10 h-10 rounded-full font-bold text-xs flex items-center justify-center border-2 transition-all
+                          w-8 h-8 rounded-full font-bold text-xs flex items-center justify-center border-2 transition-all
                           ${targetLength === len 
                             ? 'bg-nook-orange text-white border-nook-orange shadow-md' 
                             : 'bg-white text-nook-text border-nook-tan hover:border-nook-orange/50'}
@@ -288,8 +304,55 @@ export const QuizView: React.FC = () => {
                </div>
 
                <button 
-                 onClick={openSelector}
+                 onClick={() => openSelector('english-chinese')}
                  className="w-full bg-nook-orange text-white font-bold text-lg py-3 rounded-full border-b-4 border-orange-600 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center gap-2"
+               >
+                 <CheckSquare size={18} /> 選擇範圍
+               </button>
+           </div>
+
+           {/* 3. Chinese -> English (Symbol) */}
+           <div className="bg-[#FFF5F8] p-6 rounded-nook border-4 border-pink-200 shadow-xl flex flex-col items-center text-center relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-full h-2 bg-pink-400/30"></div>
+               <div className="w-16 h-16 bg-pink-400 rounded-full flex items-center justify-center mb-4 text-white text-2xl shadow-md transform -rotate-2">
+                 <Globe size={28} />
+               </div>
+               <h2 className="text-xl font-black text-pink-900 mb-2">元素符號挑戰</h2>
+               <p className="text-pink-900 opacity-70 mb-4 font-medium text-sm flex-grow">
+                 看到中文名稱，能不能馬上反應出化學符號 (簡寫) 呢？
+               </p>
+
+               <div className="w-full bg-pink-100/50 p-4 rounded-3xl mb-4 flex-col justify-center items-center border-2 border-dashed border-pink-200">
+                  <div className="flex justify-center gap-2 mb-2">
+                      <span className="bg-white text-pink-900 px-2 py-1 rounded text-xs font-bold shadow-sm">錳</span>
+                      <ArrowRight size={16} className="text-pink-900/50"/>
+                      <span className="bg-pink-400 text-white px-2 py-1 rounded text-xs font-bold shadow-sm">Mn</span>
+                  </div>
+                  <p className="text-[10px] text-pink-900 opacity-50 font-bold mt-2">可自訂範圍</p>
+               </div>
+
+               <div className="w-full mb-4">
+                  <div className="flex justify-center gap-2">
+                    {QUIZ_LENGTHS.map((len) => (
+                      <button 
+                        key={len} 
+                        onClick={() => handleLengthSelect(len)}
+                        className={`
+                          w-8 h-8 rounded-full font-bold text-xs flex items-center justify-center border-2 transition-all
+                          ${targetLength === len 
+                            ? 'bg-pink-400 text-white border-pink-500 shadow-md' 
+                            : 'bg-white text-pink-900 border-pink-200 hover:border-pink-300'}
+                        `}
+                      >
+                        {len}
+                      </button>
+                    ))}
+                  </div>
+               </div>
+
+               <button 
+                 onClick={() => openSelector('chinese-english')}
+                 className="w-full bg-pink-400 text-white font-bold text-lg py-3 rounded-full border-b-4 border-pink-600 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center gap-2"
                >
                  <CheckSquare size={18} /> 選擇範圍
                </button>
@@ -305,12 +368,20 @@ export const QuizView: React.FC = () => {
     const groupCols = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
     const transitionRows = [4, 5, 6, 7];
 
+    // Dynamic styles based on mode
+    const isPinkMode = quizMode === 'chinese-english';
+    const mainColorClass = isPinkMode ? 'bg-pink-400 border-pink-600' : 'bg-nook-blue border-blue-600';
+    const activeGroupClass = isPinkMode ? 'bg-pink-400 text-white border-pink-400' : 'bg-nook-blue text-white border-nook-blue';
+    const hoverBorderClass = isPinkMode ? 'hover:border-pink-400' : 'hover:border-nook-blue';
+    const activeCellClass = isPinkMode ? 'bg-pink-400/30 ring-pink-400' : 'bg-nook-blue/30 ring-nook-blue';
+
     return (
       <div className="max-w-5xl mx-auto w-full px-4 pb-20 animate-in fade-in slide-in-from-bottom-4">
-        <div className="bg-nook-cream p-4 sm:p-8 rounded-nook border-4 border-white shadow-xl">
+        <div className={`bg-nook-cream p-4 sm:p-8 rounded-nook border-4 ${isPinkMode ? 'border-pink-100' : 'border-white'} shadow-xl`}>
            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-black text-nook-text flex items-center gap-2">
-                <CheckSquare className="text-nook-orange" /> 選擇測驗範圍
+              <h2 className={`text-2xl font-black ${isPinkMode ? 'text-pink-900' : 'text-nook-text'} flex items-center gap-2`}>
+                <CheckSquare className={isPinkMode ? "text-pink-400" : "text-nook-orange"} /> 
+                {quizMode === 'english-chinese' ? "選擇範圍 (英翻中)" : "選擇範圍 (符號挑戰)"}
               </h2>
               <button onClick={resetToMenu} className="text-nook-text/50 font-bold hover:text-nook-text">取消</button>
            </div>
@@ -331,8 +402,8 @@ export const QuizView: React.FC = () => {
                              className={`
                                w-8 h-8 rounded-lg border-2 flex items-center justify-center font-bold text-xs transition-all
                                ${selectedGroups.includes(g) 
-                                 ? 'bg-nook-blue text-white border-nook-blue shadow-md scale-110' 
-                                 : 'bg-white text-gray-400 border-gray-300 hover:border-nook-blue'}
+                                 ? `${activeGroupClass} shadow-md scale-110` 
+                                 : `bg-white text-gray-400 border-gray-300 ${hoverBorderClass}`}
                              `}
                            >
                              {selectedGroups.includes(g) && <CheckCircle size={14} />}
@@ -346,17 +417,17 @@ export const QuizView: React.FC = () => {
 
                    {/* Mock Rows to show structure */}
                    {/* Row 1 */}
-                   <div className={`col-start-1 h-8 rounded bg-gray-200/50 ${selectedGroups.includes(1) ? 'bg-nook-blue/30 ring-2 ring-nook-blue' : ''}`}></div>
-                   <div className={`col-start-18 h-8 rounded bg-gray-200/50 ${selectedGroups.includes(18) ? 'bg-nook-blue/30 ring-2 ring-nook-blue' : ''}`}></div>
+                   <div className={`col-start-1 h-8 rounded bg-gray-200/50 ${selectedGroups.includes(1) ? `${activeCellClass} ring-2` : ''}`}></div>
+                   <div className={`col-start-18 h-8 rounded bg-gray-200/50 ${selectedGroups.includes(18) ? `${activeCellClass} ring-2` : ''}`}></div>
 
                    {/* Row 2 & 3 */}
                    {[2, 3].map(r => (
                      <React.Fragment key={r}>
-                       <div className={`col-start-1 h-8 rounded bg-gray-200/50 ${selectedGroups.includes(1) ? 'bg-nook-blue/30 ring-2 ring-nook-blue' : ''}`}></div>
-                       <div className={`col-start-2 h-8 rounded bg-gray-200/50 ${selectedGroups.includes(2) ? 'bg-nook-blue/30 ring-2 ring-nook-blue' : ''}`}></div>
+                       <div className={`col-start-1 h-8 rounded bg-gray-200/50 ${selectedGroups.includes(1) ? `${activeCellClass} ring-2` : ''}`}></div>
+                       <div className={`col-start-2 h-8 rounded bg-gray-200/50 ${selectedGroups.includes(2) ? `${activeCellClass} ring-2` : ''}`}></div>
                        <div className={`col-start-13 col-span-6 h-8 rounded bg-gray-200/50 flex`}>
                           {[13,14,15,16,17,18].map(g => (
-                             <div key={g} className={`flex-1 h-full border-r border-white/50 last:border-0 ${selectedGroups.includes(g) ? 'bg-nook-blue/30 ring-inset ring-2 ring-nook-blue' : ''}`}></div>
+                             <div key={g} className={`flex-1 h-full border-r border-white/50 last:border-0 ${selectedGroups.includes(g) ? `${activeCellClass} ring-inset ring-2` : ''}`}></div>
                           ))}
                        </div>
                      </React.Fragment>
@@ -366,8 +437,8 @@ export const QuizView: React.FC = () => {
                    {transitionRows.map(r => (
                       <React.Fragment key={r}>
                         {/* Main Group 1 & 2 cells */}
-                        <div className={`col-start-1 h-8 rounded bg-gray-200/50 ${selectedGroups.includes(1) ? 'bg-nook-blue/30 ring-2 ring-nook-blue' : ''}`}></div>
-                        <div className={`col-start-2 h-8 rounded bg-gray-200/50 ${selectedGroups.includes(2) ? 'bg-nook-blue/30 ring-2 ring-nook-blue' : ''}`}></div>
+                        <div className={`col-start-1 h-8 rounded bg-gray-200/50 ${selectedGroups.includes(1) ? `${activeCellClass} ring-2` : ''}`}></div>
+                        <div className={`col-start-2 h-8 rounded bg-gray-200/50 ${selectedGroups.includes(2) ? `${activeCellClass} ring-2` : ''}`}></div>
                         
                         {/* Transition Block Selector Button */}
                         <div className="col-start-3 col-span-10 relative h-8">
@@ -388,7 +459,7 @@ export const QuizView: React.FC = () => {
                         {/* Main Group 13-18 cells */}
                          <div className={`col-start-13 col-span-6 h-8 rounded bg-gray-200/50 flex`}>
                           {[13,14,15,16,17,18].map(g => (
-                             <div key={g} className={`flex-1 h-full border-r border-white/50 last:border-0 ${selectedGroups.includes(g) ? 'bg-nook-blue/30 ring-inset ring-2 ring-nook-blue' : ''}`}></div>
+                             <div key={g} className={`flex-1 h-full border-r border-white/50 last:border-0 ${selectedGroups.includes(g) ? `${activeCellClass} ring-inset ring-2` : ''}`}></div>
                           ))}
                        </div>
                       </React.Fragment>
@@ -434,10 +505,11 @@ export const QuizView: React.FC = () => {
 
            <div className="flex justify-center mt-8">
               <button 
-                onClick={startEnglishQuiz}
-                className="bg-nook-blue text-white font-bold text-xl py-4 px-12 rounded-full border-b-4 border-blue-600 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center gap-2 shadow-lg"
+                onClick={startCustomQuiz}
+                className={`${mainColorClass} text-white font-bold text-xl py-4 px-12 rounded-full border-b-4 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center gap-2 shadow-lg`}
               >
-                <Play fill="currentColor" size={24} /> 開始英翻中測驗
+                <Play fill="currentColor" size={24} /> 
+                {quizMode === 'english-chinese' ? "開始英翻中" : "開始符號挑戰"}
               </button>
            </div>
         </div>
@@ -458,6 +530,9 @@ export const QuizView: React.FC = () => {
     const answerMap: Record<string, number> = { "A": 0, "B": 1, "C": 2, "D": 3 };
     const correctIndex = answerMap[correctLetter];
 
+    const isPinkMode = quizMode === 'chinese-english';
+    const activeRingClass = isPinkMode ? 'ring-pink-400' : 'ring-green-400';
+
     return (
       <div className="max-w-2xl mx-auto w-full px-4 pb-20">
          {/* Top Bar: Progress & Score */}
@@ -470,10 +545,10 @@ export const QuizView: React.FC = () => {
             </div>
          </div>
 
-         <div className="bg-nook-cream p-6 sm:p-8 rounded-nook border-4 border-white shadow-xl relative animate-in zoom-in-95 duration-300">
+         <div className={`bg-nook-cream p-6 sm:p-8 rounded-nook border-4 ${isPinkMode ? 'border-pink-100' : 'border-white'} shadow-xl relative animate-in zoom-in-95 duration-300`}>
            {/* Topic Badge */}
            <div className="absolute top-4 right-6 bg-nook-tan/50 px-3 py-1 rounded-full text-xs font-bold text-nook-text opacity-60">
-             {quizMode === 'english-chinese' ? "英翻中" : topic}
+             {quizMode === 'english-chinese' ? "英翻中" : quizMode === 'chinese-english' ? "符號挑戰" : topic}
            </div>
 
            {/* Question Text */}
@@ -483,6 +558,9 @@ export const QuizView: React.FC = () => {
              </h3>
              {quizMode === 'english-chinese' && (
                  <p className="text-nook-text/50 font-bold mt-2">這個元素的中文名稱是？</p>
+             )}
+             {quizMode === 'chinese-english' && (
+                 <p className="text-nook-text/50 font-bold mt-2">這個元素的符號是？</p>
              )}
            </div>
 
@@ -495,7 +573,7 @@ export const QuizView: React.FC = () => {
                if (selectedAnswer !== null) {
                  // Reveal phase
                  if (idx === correctIndex) {
-                   buttonStyle = "bg-green-100 border-green-500 ring-2 ring-green-400";
+                   buttonStyle = `bg-green-100 border-green-500 ring-2 ${activeRingClass}`;
                  } else if (selectedAnswer === idx) {
                    buttonStyle = "bg-red-100 border-red-500 opacity-80";
                  } else {
@@ -527,7 +605,9 @@ export const QuizView: React.FC = () => {
              <div className="mt-6 pt-6 border-t-2 border-dashed border-nook-tan flex justify-end animate-in fade-in slide-in-from-bottom-2">
                 <button 
                   onClick={nextQuestion}
-                  className="bg-nook-blue text-white font-bold py-3 px-8 rounded-full shadow-[0_4px_0_rgb(0,0,0,0.1)] active:shadow-none active:translate-y-1 transition-all flex items-center gap-2"
+                  className={`
+                    ${isPinkMode ? 'bg-pink-400' : 'bg-nook-blue'} text-white font-bold py-3 px-8 rounded-full shadow-[0_4px_0_rgb(0,0,0,0.1)] active:shadow-none active:translate-y-1 transition-all flex items-center gap-2
+                  `}
                 >
                   {currentIndex < questions.length - 1 ? "下一題" : "查看結果"} <ArrowRight size={20} />
                 </button>
